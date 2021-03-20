@@ -5,11 +5,37 @@ import matplotlib as plt
 import numpy as np
 import math
 
+
+def getDepthImg(r):
+	depth_img = r.getDepth()
+	temp = r.getImage()
+
+	print(depth_img[0,0])
+
+	row = 0
+	col = 0
+	for x in depth_img:
+		for y in x:
+			if math.isnan(y):
+				y = 0
+			temp[row,col] = (y/10)*255
+			col += 1	
+		row += 1
+		col = 0
+
+	cv2.imwrite('depth.jpg',temp)	
+	return temp
+
+def getMask(light, dark, img):
+	hsv_test = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    	mask = cv2.inRange(hsv_test, light, dark)
+	cv2.imwrite('mask.jpg',mask)	
+
+	return mask	
+
 def findCoM(light, dark, img):
 
-    hsv_test = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-
-    mask = cv2.inRange(hsv_test, light, dark)
+    mask = getMask(light, dark, img)
 
     array = np.zeros(len(mask[0]))
     num = 0
@@ -39,6 +65,20 @@ def findCoM(light, dark, img):
 
     return x
 
+def getBalloonDepth(light, dark, r):
+
+	depthImg = getDepthImg(r)
+	mask = getMask(light, dark, r.getImage())
+
+	print("depth: " + str(len(depthImg)) + "x" + str(len(depthImg[0]))) 	
+	print("mask: " + str(len(mask)) + "x" + str(len(mask[0]))) 
+	
+	balloonDepth = cv2.bitwise_and(depthImg, depthImg, mask = mask)
+	cv2.imwrite('bDepth.jpg',balloonDepth)
+
+	return balloonDepth	
+	
+
 color = raw_input("Color? ")
 
 if color == 'green':
@@ -61,34 +101,10 @@ if color == 'blue':
     light = (100,15,20)
     dark = (130,255,235)
 
+
 r = robot()
 
+img = getBalloonDepth(light, dark, r)
+print(img[200,0][0]*10.0/255.0)
 
-img_rgb = r.getImage()
-cv2.imwrite('test.jpg',img_rgb)
-img_hsv = cv2.cvtColor(img_rgb,cv2.COLOR_BGR2HSV)
-cv2.imwrite('before.jpg',img_hsv)
-outhsv = cv2.inRange(img_hsv,light,dark)
-cv2.imwrite('after.jpg',outhsv)
-
-def get_ang_err(com, P=.5):
-    return P*(320-com)
-
-def get_dist_err(dens,P=.5):
-    return P*(921600-dens)
-
-ros = rospy.Rate(10)
-
-while not rospy.is_shutdown():
-    img = r.getImage()
-    err = 320-findCoM(light,dark,img)
-    if err > .2:
-        err = .2
-    if err < -.2:
-        err = -.2
-    """if err==0:
-        r.drive(angSpeed=2,linSpeed=0)
-    else:
-        r.drive(angSpeed=err,linSpeed=.1)"""
-    ros.sleep()
 
