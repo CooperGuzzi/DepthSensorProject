@@ -78,6 +78,19 @@ def getBalloonDepth(light, dark, r):
 
 	return balloonDepth	
 	
+def withinDist(balloonDepth):
+        numPixels = 0
+        sumPixelVals = 0
+        for x in balloonDepth:
+                for y in x:
+                        sumPixelVals += y
+                        numPixels += 1
+        avgDist = sumPixelVals/numPixels
+        avgDist = avgDist*10.0/255.0
+        if avgDist > 0.5:
+                return False
+        else:
+                return True
 
 color = raw_input("Color? ")
 
