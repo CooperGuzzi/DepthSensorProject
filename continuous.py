@@ -5,7 +5,13 @@ import matplotlib as plt
 import numpy as np
 import math
 	
-def withinDist(depth):
+def withinDist(minDist):
+        if minDist > 0.5:
+                return False
+        else:
+                return True
+        
+def getMinDist(depth):
         minDist = depth[0,0]
         if math.isnan(minDist):
                 minDist = 10
@@ -15,10 +21,7 @@ def withinDist(depth):
                                 if mat.isnan(y):
                                         y = 10
                                 minDist = y
-        if minDist > 0.5:
-                return False
-        else:
-                return True
+        return minDist
 
 try:
         
@@ -29,7 +32,8 @@ try:
         while not rospy.is_shutdown():
                 ros.sleep()
                 depth = r.getDepth()
-                if withinDist(depth):
+                minDist = getMinDist(depth)
+                if withinDist(minDist):
                         r.stop()
         
 except Exception as e:
