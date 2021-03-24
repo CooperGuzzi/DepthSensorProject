@@ -11,7 +11,7 @@ def getDepthImg(r):
 	depth_img = r.getDepth()
 	temp = r.getImage()
 
-	print(depth_img[0,0])
+	#print(depth_img[0,0])
 
 	row = 0
 	col = 0
@@ -70,9 +70,6 @@ def getBalloonDepth(light, dark, r):
 
 	depthImg = getDepthImg(r)
 	mask = getMask(light, dark, r.getImage())
-
-	print("depth: " + str(len(depthImg)) + "x" + str(len(depthImg[0]))) 	
-	print("mask: " + str(len(mask)) + "x" + str(len(mask[0]))) 
 	
 	balloonDepth = cv2.bitwise_and(depthImg, depthImg, mask = mask)
 	cv2.imwrite('bDepth.jpg',balloonDepth)
@@ -91,7 +88,7 @@ def withinDist(balloonDepth):
 		return False
         avgDist = sumPixelVals/numPixels
         avgDist = avgDist*10.0/255.0
-	print(avgDist)
+	#print(avgDist)
         if (avgDist > 1):
                 return False
         else:
@@ -106,7 +103,7 @@ def getBalloonDist(balloonDepth):
 				d = y[0]*10.0/255.0
 				if(d<dist):
 					dist = d
-	return d 
+	return dist 
 
 ######################
 
@@ -138,7 +135,7 @@ def findCoM(light, dark, img):
         for row in range(len(mask)):
             mask[row,int(x)] = 0
 
-    print(x)
+    #print(x)
 
     cv2.imwrite("mask.jpg", mask)
 
@@ -196,10 +193,10 @@ while not rospy.is_shutdown():
     if err < -.2:
         err = -.2
     if err==0:
-        r.drive(angSpeed=2,linSpeed=0)
+        r.drive(angSpeed=3,linSpeed=0)
     else:
         r.drive(angSpeed=err*(bDist/10),linSpeed=.1)
-	if bDist < 1.5:
+	if bDist < .8:
 		break    
     ros.sleep()
 
