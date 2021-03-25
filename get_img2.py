@@ -179,7 +179,7 @@ def get_ang_err(com, P=.5):
 def get_dist_err(dens,P=.5):
     return P*(921600-dens)
 
-ros = rospy.Rate(1)
+ros = rospy.Rate(10)
 
 while not rospy.is_shutdown():
     
