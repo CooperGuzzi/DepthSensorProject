@@ -121,7 +121,7 @@ r = robot()
 ros = rospy.Rate(10)
 
 while not rospy.is_shutdown():
-    img = r.getImg()
+    img = r.getImage()
     dpth = r.getDepth()
     mask = getMask(light, dark, img)
     augmented = augmentedImg(img, mask, color)
