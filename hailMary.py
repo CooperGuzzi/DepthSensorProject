@@ -72,13 +72,15 @@ def getBalloonDist(mask, depth):
         yy = 0
         for x in mask:
                 for y in x:
-                        if y[0] == 255:
+                        if y == 255:
                                 totDist += depth[xx, yy]
                                 numPixels += 1
                         yy += 1
                         
                 yy = 0
                 xx += 1
+	if numPixels == 0:
+		return 10000
         return totDist/numPixels
         
 
@@ -118,28 +120,33 @@ r = robot()
 
 
 
-ros = rospy.Rate(10)
+ros = rospy.Rate(30)
+count = 0
 
 while not rospy.is_shutdown():
     img = r.getImage()
     dpth = r.getDepth()
     mask = getMask(light, dark, img)
     augmented = augmentedImg(img, mask, color)
-    cv2.imshow('augmented', augmented)
-    cv2.waitKey(1)
+    #cv2.imshow('augmented', augmented)
+    #cv2.waitKey(1)
     bDist = getBalloonDist(mask, dpth)
     print("distance: " + str(bDist))
-    #err = 320-findCoM(light,dark,img)
-    #if err > .2:
-        #err = .2
-    #if err < -.2:
-        #err = -.2
-    #if err==0:
-        #r.drive(angSpeed=3,linSpeed=0)
-    #else:
-        #r.drive(angSpeed=err*(bDist/10),linSpeed=.1)
-	#if bDist < .8:
-		#break    
+    err = 320-findCoM(light,dark,img, mask)
+    if err > .15:
+        err = .15
+    if err < -.15:
+        err = -.15
+    if err==0:
+        r.drive(angSpeed=3,linSpeed=0)
+    else:
+        r.drive(angSpeed=err,linSpeed=.1)
+	if bDist < 750 and bDist >0:
+		count += 1
+		if (count>1):
+			break   
+	else:
+		count = 0 
     ros.sleep()
 
 r.stop()
